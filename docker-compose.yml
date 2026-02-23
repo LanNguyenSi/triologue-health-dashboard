@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: triologue-health-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - TRIOLOGUE_API_URL=http://host.docker.internal:4001
+      - DOCKER_SOCKET=/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - triologue-health
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: triologue-health-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=/api
+    networks:
+      - triologue-health
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  triologue-health:
+    driver: bridge
